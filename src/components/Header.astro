@@ -11,7 +11,7 @@ const currentPath = Astro.url.pathname;
 
 <header class="border-b border-border sticky top-0 z-50 bg-bg-primary/80 backdrop-blur-sm">
   <nav class="container mx-auto px-4 py-4 max-w-5xl flex items-center justify-between">
-    <a href="/" class="text-xl font-bold text-accent hover:opacity-80 transition-opacity">
+    <a href="/" class="text-xl font-bold text-accent hover:opacity-80 transition-opacity hover:scale-105 transform duration-200 inline-block">
       cancerlogo
     </a>
 
@@ -20,9 +20,9 @@ const currentPath = Astro.url.pathname;
         <a
           href={href}
           class:list={[
-            'text-sm font-medium transition-colors',
+            'nav-link text-sm font-medium transition-colors',
             currentPath === href || currentPath.startsWith(href + '/')
-              ? 'text-accent'
+              ? 'text-accent active'
               : 'text-text-secondary hover:text-text-primary',
           ]}
         >
@@ -31,7 +31,7 @@ const currentPath = Astro.url.pathname;
       ))}
       <button
         id="theme-toggle"
-        class="p-2 rounded-lg hover:bg-bg-card transition-colors"
+        class="theme-toggle p-2 rounded-lg hover:bg-bg-card transition-colors"
         aria-label="Toggle theme"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
