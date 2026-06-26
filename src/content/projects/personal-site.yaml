@@ -1,6 +1,6 @@
 name: "Personal Site"
 description: "我的个人网站 - 博客 + 作品集"
 techStack: ["Astro", "Tailwind CSS", "Cloudflare Pages"]
-github: "https://github.com/xxx/personal-site"
-demo: "https://xxx.pages.dev"
+github: "https://github.com/cancerlogo/personal-site"
+demo: "https://cancerlogo.pages.dev"
 featured: true
