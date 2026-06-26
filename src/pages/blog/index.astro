@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const categories = [...new Set(posts.map((post) => post.data.category))];
+
+function getReadingTime(content: string): string {
+  const chineseChars = (content.match(/[一-鿿]/g) || []).length;
+  const englishWords = (content.match(/[a-zA-Z]+/g) || []).length;
+  const minutes = Math.ceil(chineseChars / 400 + englishWords / 200);
+  return `${minutes} 分钟`;
+}
+---
+
+<BaseLayout title="博客">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold mb-4">博客</h1>
+    <p class="text-text-secondary">记录技术笔记与思考</p>
+  </div>
+
+  {/* Category Filter */}
+  <div class="flex flex-wrap gap-2 mb-8">
+    <a href="/blog" class="px-3 py-1 rounded-full text-sm bg-accent text-bg-primary">
+      全部
+    </a>
+    {categories.map((cat) => (
+      <a href={`/blog/category/${cat}`} class="px-3 py-1 rounded-full text-sm border border-border text-text-secondary hover:text-accent hover:border-accent transition-colors">
+        {cat}
+      </a>
+    ))}
+  </div>
+
+  {/* Search Bar */}
+  <div class="mb-8">
+    <input
+      type="text"
+      id="search-input"
+      placeholder="搜索文章..."
+      class="w-full px-4 py-3 rounded-lg bg-bg-card border border-border text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
+    />
+  </div>
+
+  {/* Posts Grid */}
+  <div id="posts-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {posts.map((post) => (
+      <div class="post-item" data-title={post.data.title} data-description={post.data.description} data-tags={post.data.tags.join(',')}>
+        <BlogCard
+          title={post.data.title}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          slug={post.id}
+          category={post.data.category}
+          tags={post.data.tags}
+          readingTime={getReadingTime(post.body || '')}
+        />
+      </div>
+    ))}
+  </div>
+
+  {/* No Results Message */}
+  <div id="no-results" class="hidden text-center py-12 text-text-secondary">
+    没有找到匹配的文章
+  </div>
+</BaseLayout>
+
+<script>
+  import Fuse from 'fuse.js';
+
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const postsList = document.getElementById('posts-list');
+  const noResults = document.getElementById('no-results');
+  const postItems = document.querySelectorAll('.post-item');
+
+  const searchData = Array.from(postItems).map((item) => ({
+    element: item,
+    title: item.getAttribute('data-title') || '',
+    description: item.getAttribute('data-description') || '',
+    tags: item.getAttribute('data-tags') || '',
+  }));
+
+  const fuse = new Fuse(searchData, {
+    keys: ['title', 'description', 'tags'],
+    threshold: 0.3,
+  });
+
+  searchInput?.addEventListener('input', (e) => {
+    const query = (e.target as HTMLInputElement).value.trim();
+
+    if (!query) {
+      postItems.forEach((item) => (item as HTMLElement).style.display = '');
+      noResults?.classList.add('hidden');
+      return;
+    }
+
+    const results = fuse.search(query);
+    const matchedElements = new Set(results.map((r) => r.item.element));
+
+    postItems.forEach((item) => {
+      (item as HTMLElement).style.display = matchedElements.has(item) ? '' : 'none';
+    });
+
+    if (matchedElements.size === 0) {
+      noResults?.classList.remove('hidden');
+    } else {
+      noResults?.classList.add('hidden');
+    }
+  });
+</script>

@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('projects');
+const allTechStack = [...new Set(projects.flatMap((p) => p.data.techStack))].sort();
+---
+
+<BaseLayout title="项目">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold mb-4">项目</h1>
+    <p class="text-text-secondary">我的开源项目和作品</p>
+  </div>
+
+  {/* Tech Stack Filter */}
+  <div class="flex flex-wrap gap-2 mb-8">
+    <button class="filter-btn active px-3 py-1 rounded-full text-sm bg-accent text-bg-primary" data-tech="all">
+      全部
+    </button>
+    {allTechStack.map((tech) => (
+      <button class="filter-btn px-3 py-1 rounded-full text-sm border border-border text-text-secondary hover:text-accent hover:border-accent transition-colors" data-tech={tech}>
+        {tech}
+      </button>
+    ))}
+  </div>
+
+  {/* Projects Grid */}
+  <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {projects.map((project) => (
+      <div class="project-item" data-tech={project.data.techStack.join(',')}>
+        <ProjectCard
+          name={project.data.name}
+          description={project.data.description}
+          techStack={project.data.techStack}
+          github={project.data.github}
+          demo={project.data.demo}
+        />
+      </div>
+    ))}
+  </div>
+</BaseLayout>
+
+<script>
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const projectItems = document.querySelectorAll('.project-item');
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tech = btn.getAttribute('data-tech');
+
+      // Update active button
+      filterBtns.forEach((b) => {
+        b.classList.remove('active', 'bg-accent', 'text-bg-primary');
+        b.classList.add('border', 'border-border', 'text-text-secondary');
+      });
+      btn.classList.add('active', 'bg-accent', 'text-bg-primary');
+      btn.classList.remove('border', 'border-border', 'text-text-secondary');
+
+      // Filter projects
+      projectItems.forEach((item) => {
+        const itemTech = item.getAttribute('data-tech') || '';
+        if (tech === 'all' || itemTech.includes(tech)) {
+          (item as HTMLElement).style.display = '';
+        } else {
+          (item as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  });
+</script>

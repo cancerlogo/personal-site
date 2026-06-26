@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogCard from '../../../components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const categories = [...new Set(posts.map((post) => post.data.category))];
+
+  return categories.map((category) => ({
+    params: { category },
+    props: {
+      category,
+      posts: posts
+        .filter((post) => post.data.category === category && !post.data.draft)
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }));
+}
+
+const { category, posts } = Astro.props;
+
+function getReadingTime(content: string): string {
+  const chineseChars = (content.match(/[一-鿿]/g) || []).length;
+  const englishWords = (content.match(/[a-zA-Z]+/g) || []).length;
+  const minutes = Math.ceil(chineseChars / 400 + englishWords / 200);
+  return `${minutes} 分钟`;
+}
+---
+
+<BaseLayout title={`分类: ${category}`}>
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold mb-2">分类: {category}</h1>
+    <p class="text-text-secondary">共 {posts.length} 篇文章</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {posts.map((post) => (
+      <BlogCard
+        title={post.data.title}
+        description={post.data.description}
+        pubDate={post.data.pubDate}
+        slug={post.id}
+        category={post.data.category}
+        tags={post.data.tags}
+        readingTime={getReadingTime(post.body || '')}
+      />
+    ))}
+  </div>
+
+  <div class="mt-8">
+    <a href="/blog" class="text-accent hover:underline">← 返回博客列表</a>
+  </div>
+</BaseLayout>
