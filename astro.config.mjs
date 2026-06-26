@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://xxx.pages.dev',
+  site: 'https://cancerlogo.pages.dev',
   vite: {
     plugins: [tailwindcss()],
   },
